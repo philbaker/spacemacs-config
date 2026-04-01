@@ -3,3 +3,4 @@
 # Environment variables are automatically generated
 .spacemacs.env
 recentf
+emacs-custom-settings.el
