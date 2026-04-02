@@ -153,6 +153,8 @@ This function should only modify configuration layer settings."
          org-journal-time-format ""
          org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"BLOCKED\"|TODO=\"REVIEW\"")
 
+       (php :variables
+         php-backend 'lsp)
 
        ;; Text-based file manager with preview - SPC a t r r
        (ranger :variables
