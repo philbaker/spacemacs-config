@@ -165,7 +165,7 @@ This function should only modify configuration layer settings."
        ;; SPC ' runs shell in a popup buffer
        (shell :variables
          shell-default-shell 'vterm
-         shell-default-term-shell "/usr/bin/zsh"
+         shell-default-term-shell (if (eq system-type 'darwin) "/bin/zsh" "/bin/bash")
          shell-default-height 30
          shell-default-position 'bottom)
 
@@ -234,13 +234,14 @@ This function should only modify configuration layer settings."
     ;; `:location' property: '(your-package :location "~/path/to/your-package/")
     ;; Also include the dependencies as they will not be resolved automatically.
     dotspacemacs-additional-packages '(catppuccin-theme
-                                        clojure-essential-ref)
+                                        clojure-essential-ref
+                                        eca)
 
     ;; A list of packages that cannot be updated.
     dotspacemacs-frozen-packages '()
 
     ;; A list of packages that will not be installed and loaded.
-    dotspacemacs-excluded-packages '()
+    dotspacemacs-excluded-packages '(diff-hl code-review)
 
     ;; Defines the behaviour of Spacemacs when installing packages.
     ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -457,7 +458,7 @@ It should only modify the values of Spacemacs settings."
 
     ;; If non-nil then the last auto saved layouts are resumed automatically upon
     ;; start. (default nil)
-    dotspacemacs-auto-resume-layouts t
+    dotspacemacs-auto-resume-layouts nil
 
     ;; If non-nil, auto-generate layout name when creating new layouts. Only has
     ;; effect when using the "jump to layout by number" commands. (default nil)

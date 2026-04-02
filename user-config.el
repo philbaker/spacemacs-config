@@ -61,7 +61,8 @@
 ;; ---------------------------------------
 ;; Spacehammer integration
 ;; ---------------------------------------
-(server-start)
-(load "~/.hammerspoon/spacehammer.el")
+(when (eq system-type 'darwin)
+  (server-start)
+  (load "~/.hammerspoon/spacehammer.el"))
 
 ;; ---------------------------------------
