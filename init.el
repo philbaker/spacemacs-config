@@ -113,8 +113,18 @@ This function should only modify configuration layer settings."
        helm
 
        html
-       javascript
+
+       (javascript :variables
+         javascript-backend 'lsp
+         javascript-fmt-tool 'prettier)
+
        json
+
+       (typescript :variables
+         typescript-backend 'lsp
+         typescript-fmt-tool 'prettier)
+
+       vue
 
        ;; Language server protocol with minimal visual impact
        ;; https://practical.li/spacemacs/install-spacemacs/clojure-lsp/
@@ -124,12 +134,12 @@ This function should only modify configuration layer settings."
          lsp-ui-peek-enable nil                          ; popups for refs, errors, symbols, etc.
          lsp-semantic-tokens-enable t                    ; enhance syntax highlight
          lsp-treemacs-error-list-current-project-only t  ; limit errors to current project
-         lsp-idle-delay 1.5                              ; smooth LSP features response
+         lsp-idle-delay 0.5                              ; smooth LSP features response
          lsp-eldoc-enable-hover nil                      ; disable all hover actions
          lsp-ui-doc-enable nil                           ; doc hover popups
          lsp-ui-sideline-enable nil                      ; sidebar code actions visual indicator
          treemacs-space-between-root-nodes nil           ; spacing in treemacs views
-         lsp-log-io t                                    ; Log client-server json communication
+         lsp-log-io nil                                  ; Log client-server json communication
          )
 
        markdown
