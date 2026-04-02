@@ -58,6 +58,10 @@
        (file+headline "~/org-sync/notes.org" "Notes")
        "* %?\n  %U")))
 
+(setq org-habit-graph-column 60)
+
+(setq org-habit-show-all-today t)
+
 ;; ---------------------------------------
 ;; Spacehammer integration
 ;; ---------------------------------------
