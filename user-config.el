@@ -25,7 +25,7 @@
 (remove-hook 'helm-mode-hook 'helm-descbinds-mode)
 
 ;; ---------------------------------------
-;; Org Todo Workflow
+;; Org Mode
 ;; ---------------------------------------
 (setq org-todo-keywords
   '((sequence "REPEAT(r)" "TODO(t)" "NEXT(n)" "ACTIVE(a!)" "C REVIEW(o)" "S REVIEW(e)" "CS REVIEW(v)" "R QUEUE(q)" "HOLD(l@/!)" "WAITING(w@/!)" "MAYBE(m)" "PROJ(p)" "|" "DONE(d!)" "CANCELLED(c@/!)")
@@ -47,5 +47,7 @@
      ("PROJ"      . "plum1")
      ("DONE"      . "green")
      ("CANCELLED" . "red")))
+
+(setq org-agenda-files '("~/org-sync/mobile.org" "~/org-sync/laptop.org" "~/org-sync/ob.org" "~/org-sync/work.org"))
 
 ;; ---------------------------------------
