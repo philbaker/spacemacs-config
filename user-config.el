@@ -50,4 +50,18 @@
 
 (setq org-agenda-files '("~/org-sync/mobile.org" "~/org-sync/laptop.org" "~/org-sync/ob.org" "~/org-sync/work.org"))
 
+(setq org-capture-templates
+  '(("t" "Task" entry
+      (file+headline "~/org-sync/inbox.org" "Tasks")
+      "* TODO %?\n  %U\n  %a")
+     ("n" "Note" entry
+       (file+headline "~/org-sync/notes.org" "Notes")
+       "* %?\n  %U")))
+
+;; ---------------------------------------
+;; Spacehammer integration
+;; ---------------------------------------
+(server-start)
+(load "~/.hammerspoon/spacehammer.el")
+
 ;; ---------------------------------------
