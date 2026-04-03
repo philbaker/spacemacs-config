@@ -247,7 +247,8 @@ This function should only modify configuration layer settings."
     ;; Also include the dependencies as they will not be resolved automatically.
     dotspacemacs-additional-packages '(catppuccin-theme
                                         clojure-essential-ref
-                                        eca)
+                                        eca
+                                        dirvish)
 
     ;; A list of packages that cannot be updated.
     dotspacemacs-frozen-packages '()
