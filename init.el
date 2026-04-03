@@ -248,7 +248,8 @@ This function should only modify configuration layer settings."
     dotspacemacs-additional-packages '(catppuccin-theme
                                         clojure-essential-ref
                                         eca
-                                        dirvish)
+                                        dirvish
+                                        apheleia)
 
     ;; A list of packages that cannot be updated.
     dotspacemacs-frozen-packages '()
