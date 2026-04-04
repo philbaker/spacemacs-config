@@ -30,8 +30,7 @@
 ;; ---------------------------------------
 (defvar my/jotes-dir
   (or (getenv "JOTES_DIRECTORY")
-    (error "JOTES_DIRECTORY environment variable is not set"))
-  "Base notes directory")
+    (error "JOTES_DIRECTORY environment variable is not set")))
 
 (defun my/daily-note-template ()
   (concat
