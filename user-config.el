@@ -3,6 +3,7 @@
 ;; ---------------------------------------
 ;; General Configuration changes
 ;; ---------------------------------------
+(setq bookmark-default-file "~/org-sync/bookmarks")
 
 ;; ---------------------------------------
 ;; Line numbers
@@ -27,6 +28,21 @@
 ;; ---------------------------------------
 ;; Org Mode
 ;; ---------------------------------------
+(defvar my/jotes-dir
+  (or (getenv "JOTES_DIRECTORY")
+    (error "JOTES_DIRECTORY environment variable is not set"))
+  "Base notes directory")
+
+(defun my/daily-note-template ()
+  (concat
+    "#+title: "
+    (format-time-string "%Y-%m-%d")
+    "\n\n"
+    (with-temp-buffer
+      (insert-file-contents
+        (expand-file-name "t/stemplate.org" my/jotes-dir))
+      (buffer-string))))
+
 (setq org-todo-keywords
   '((sequence "REPEAT(r)" "TODO(t)" "NEXT(n)" "ACTIVE(a!)" "C REVIEW(o)" "S REVIEW(e)" "CS REVIEW(v)" "R QUEUE(q)" "HOLD(l@/!)" "WAITING(w@/!)" "MAYBE(m)" "PROJ(p)" "|" "DONE(d!)" "CANCELLED(c@/!)")
      (sequence "HABIT(h)" "|" "DONE(d!)")))
@@ -54,9 +70,22 @@
   '(("t" "Task" entry
       (file+headline "~/org-sync/inbox.org" "Tasks")
       "* TODO %?\n  %U\n  %a")
+
      ("n" "Note" entry
        (file+headline "~/org-sync/notes.org" "Notes")
-       "* %?\n  %U")))
+       "* %?\n  %U")
+
+     ("d" "Daily Note" plain
+       (file (lambda ()
+               (expand-file-name
+                 (format-time-string "%Y%m%d-daily.org")
+                 my/jotes-dir)))
+       (function my/daily-note-template)
+       :unnarrowed t)))
+
+(require 'org-habit)
+
+(add-to-list 'org-modules 'org-habit)
 
 (setq org-habit-graph-column 60)
 
@@ -81,7 +110,6 @@
 
   (apheleia-global-mode -1)
   )
-
 
 ;; ---------------------------------------
 ;; Send to Vterm
