@@ -43,29 +43,23 @@
         (expand-file-name "t/stemplate.org" my/jotes-dir))
       (buffer-string))))
 
-(defun my/dated-note-path ()
+(defun my/note-path (prompt suffix)
   (let* ((notes-dir (or (getenv "NOTES_DIR")
                       (error "NOTES_DIR environment variable is not set")))
-          (clo-dir (or (getenv "CLO_DIR")
-                     (error "CLO_DIR environment variable is not set")))
+          (clo-dir   (or (getenv "CLO_DIR")
+                       (error "CLO_DIR environment variable is not set")))
           (target-dir (expand-file-name "notebooks"
                         (expand-file-name clo-dir notes-dir)))
-          (name (read-string "Note name (with extension): ")))
+          (name (read-string prompt)))
     (expand-file-name
-      (concat (format-time-string "%Y%m%d") "-" name)
+      (concat (format-time-string "%Y%m%d") "-" name suffix)
       target-dir)))
 
+(defun my/dated-note-path ()
+  (my/note-path "Note name (with extension): " ""))
+
 (defun my/meeting-note-path ()
-  (let* ((notes-dir (or (getenv "NOTES_DIR")
-                      (error "NOTES_DIR environment variable is not set")))
-          (clo-dir (or (getenv "CLO_DIR")
-                     (error "CLO_DIR environment variable is not set")))
-          (target-dir (expand-file-name "notebooks"
-                        (expand-file-name clo-dir notes-dir)))
-          (name (read-string "Meeting note name: ")))
-    (expand-file-name
-      (concat (format-time-string "%Y%m%d") "-" name "-meeting.org")
-      target-dir)))
+  (my/note-path "Meeting note name: " "-meeting.org"))
 
 (setq org-todo-keywords
   '((sequence "REPEAT(r)" "TODO(t)" "NEXT(n)" "ACTIVE(a!)" "C REVIEW(o)" "S REVIEW(e)" "CS REVIEW(v)" "R QUEUE(q)" "HOLD(l@/!)" "WAITING(w@/!)" "MAYBE(m)" "PROJ(p)" "|" "DONE(d!)" "CANCELLED(c@/!)")
