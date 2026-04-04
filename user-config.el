@@ -28,6 +28,10 @@
 ;; ---------------------------------------
 ;; Org Mode
 ;; ---------------------------------------
+(defvar my/notes-dir
+  (or (getenv "NOTES_DIR")
+    (error "NOTES_DIR environment variable is not set")))
+
 (defvar my/jotes-dir
   (or (getenv "JOTES_DIRECTORY")
     (error "JOTES_DIRECTORY environment variable is not set")))
@@ -40,6 +44,16 @@
     (with-temp-buffer
       (insert-file-contents
         (expand-file-name "t/stemplate.org" my/jotes-dir))
+      (buffer-string))))
+
+(defun my/ticket-template ()
+  (concat
+    "#+title: "
+    (read-string "Enter ticket title: ")
+    "\n\n"
+    (with-temp-buffer
+      (insert-file-contents
+        (expand-file-name "all/01-checklists/t.org" my/notes-dir))
       (buffer-string))))
 
 (defun my/note-path (prompt suffix)
@@ -84,7 +98,7 @@
 (setq org-agenda-files '("~/org-sync/mobile.org" "~/org-sync/laptop.org" "~/org-sync/ob.org" "~/org-sync/work.org"))
 
 (setq org-capture-templates
-  '(("t" "Task" entry
+  '(("i" "Inbox" entry
       (file+headline "~/org-sync/inbox.org" "Tasks")
       "* TODO %?\n  %U\n  %a")
 
@@ -100,6 +114,15 @@
        (file my/dated-note-path)
        "#+title: %<%Y-%m-%d>\n#+date: %<%Y-%m-%d>\n\n%?"
        :unnarrowed t)
+
+     ("t" "Ticket" plain
+       (file (lambda ()
+               (expand-file-name
+                 (format-time-string "%Y%m%d-ticket.org")
+                 my/jotes-dir)))
+       (function my/ticket-template)
+       :unnarrowed t)
+
      ("m" "Meeting Note" plain
        (file (lambda ()
                (my/meeting-note-path)))
@@ -123,8 +146,7 @@
 
 * Follow Up
 "
-       :unnarrowed t)
-     ))
+       :unnarrowed t)))
 
 (require 'org-habit)
 
