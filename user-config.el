@@ -82,4 +82,18 @@
   (apheleia-global-mode -1)
   )
 
+
+;; ---------------------------------------
+;; Send to Vterm
+;; ---------------------------------------
+(defun my/send-region-to-vterm (start end)
+  (interactive "r")
+  (let* ((text (buffer-substring-no-properties start end))
+          (buf (get-buffer "*vterm*")))
+    (if buf
+      (with-current-buffer buf
+        (vterm-send-string text)
+        (vterm-send-return))
+      (message "No *vterm* buffer found. Start one with M-x vterm."))))
+
 ;; ---------------------------------------
