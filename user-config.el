@@ -43,6 +43,30 @@
         (expand-file-name "t/stemplate.org" my/jotes-dir))
       (buffer-string))))
 
+(defun my/dated-note-path ()
+  (let* ((notes-dir (or (getenv "NOTES_DIR")
+                      (error "NOTES_DIR environment variable is not set")))
+          (clo-dir (or (getenv "CLO_DIR")
+                     (error "CLO_DIR environment variable is not set")))
+          (target-dir (expand-file-name "notebooks"
+                        (expand-file-name clo-dir notes-dir)))
+          (name (read-string "Note name (with extension): ")))
+    (expand-file-name
+      (concat (format-time-string "%Y%m%d") "-" name)
+      target-dir)))
+
+(defun my/meeting-note-path ()
+  (let* ((notes-dir (or (getenv "NOTES_DIR")
+                      (error "NOTES_DIR environment variable is not set")))
+          (clo-dir (or (getenv "CLO_DIR")
+                     (error "CLO_DIR environment variable is not set")))
+          (target-dir (expand-file-name "notebooks"
+                        (expand-file-name clo-dir notes-dir)))
+          (name (read-string "Meeting note name: ")))
+    (expand-file-name
+      (concat (format-time-string "%Y%m%d") "-" name "-meeting.org")
+      target-dir)))
+
 (setq org-todo-keywords
   '((sequence "REPEAT(r)" "TODO(t)" "NEXT(n)" "ACTIVE(a!)" "C REVIEW(o)" "S REVIEW(e)" "CS REVIEW(v)" "R QUEUE(q)" "HOLD(l@/!)" "WAITING(w@/!)" "MAYBE(m)" "PROJ(p)" "|" "DONE(d!)" "CANCELLED(c@/!)")
      (sequence "HABIT(h)" "|" "DONE(d!)")))
@@ -71,17 +95,43 @@
       (file+headline "~/org-sync/inbox.org" "Tasks")
       "* TODO %?\n  %U\n  %a")
 
-     ("n" "Note" entry
-       (file+headline "~/org-sync/notes.org" "Notes")
-       "* %?\n  %U")
-
      ("d" "Daily Note" plain
        (file (lambda ()
                (expand-file-name
                  (format-time-string "%Y%m%d-daily.org")
                  my/jotes-dir)))
        (function my/daily-note-template)
-       :unnarrowed t)))
+       :unnarrowed t)
+
+     ("f" "New File" plain
+       (file my/dated-note-path)
+       "#+title: %<%Y-%m-%d>\n#+date: %<%Y-%m-%d>\n\n%?"
+       :unnarrowed t)
+     ("m" "Meeting Note" plain
+       (file (lambda ()
+               (my/meeting-note-path)))
+       "#+title: %<%Y-%m-%d> %^{Meeting Title}
+#+date: %<%Y-%m-%d>
+#+time: %<%H:%M>
+
+* Meeting Details
+- *Date:* %<%A, %d %B %Y>
+- *Time:* %<%H:%M>
+- *Location/Call:* %^{Location|Remote|Office}
+- *Attendees:* %^{Attendees}
+
+* Notes
+%?
+
+* Action Items
+- [ ]
+
+* Decisions Made
+
+* Follow Up
+"
+       :unnarrowed t)
+     ))
 
 (require 'org-habit)
 
