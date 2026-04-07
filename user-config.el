@@ -189,4 +189,11 @@
         (vterm-send-return))
       (message "No *vterm* buffer found. Start one with M-x vterm."))))
 
+
 ;; ---------------------------------------
+;; Claude code
+;; ---------------------------------------
+(use-package claude-code
+  :bind-keymap ("C-c c" . claude-code-command-map)
+  :config
+  (setq claude-code-terminal-backend 'vterm))
