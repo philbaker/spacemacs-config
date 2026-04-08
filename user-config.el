@@ -178,15 +178,72 @@
 ;; ---------------------------------------
 ;; Send to Vterm
 ;; ---------------------------------------
+(defun my/send-to-vterm (cmd)
+  "Send CMD to vterm buffer."
+  (let ((buf (get-buffer "*vterm*")))
+    (if buf
+      (progn
+        (switch-to-buffer-other-window buf)
+        (vterm-send-string (concat cmd "\n")))
+      (message "No *vterm* buffer found. Start one with M-x vterm."))))
+
 (defun my/send-region-to-vterm (start end)
   (interactive "r")
-  (let* ((text (buffer-substring-no-properties start end))
-          (buf (get-buffer "*vterm*")))
-    (if buf
-      (with-current-buffer buf
-        (vterm-send-string text)
-        (vterm-send-return))
-      (message "No *vterm* buffer found. Start one with M-x vterm."))))
+  (my/send-to-vterm (buffer-substring-no-properties start end)))
+
+
+;; ---------------------------------------
+;; Testing
+;; ---------------------------------------
+(defun my/vitest-file ()
+  (interactive)
+  (my/send-to-vterm (concat "npx vitest run " (buffer-file-name))))
+
+(defun my/vitest-suite ()
+  (interactive)
+  (my/send-to-vterm "npx vitest run"))
+
+(defun my/vitest-nearest ()
+  (interactive)
+  (save-excursion
+    (let ((test-name nil))
+      (while (and (not test-name) (not (bobp)))
+        (beginning-of-line)
+        (when (looking-at ".*\\bit(\"\\([^\"]+\\)\"")
+          (setq test-name (match-string 1)))
+        (when (looking-at ".*\\btest(\"\\([^\"]+\\)\"")
+          (setq test-name (match-string 1)))
+        (forward-line -1))
+      (if test-name
+        (my/send-to-vterm (concat "npx vitest run --reporter=verbose -t '" test-name "' " (buffer-file-name)))
+        (message "No test found at point")))))
+
+(defun my/pest-file ()
+  (interactive)
+  (my/send-to-vterm (concat "./vendor/bin/pest " (buffer-file-name))))
+
+(defun my/pest-suite ()
+  (interactive)
+  (my/send-to-vterm "./vendor/bin/pest"))
+
+(defun my/pest-nearest ()
+  (interactive)
+  (save-excursion
+    (let ((test-name nil))
+      (while (and (not test-name) (not (bobp)))
+        (beginning-of-line)
+        ;; Pest style: it('test name') or test('test name')
+        (when (looking-at ".*\\b\\(?:it\\|test\\)(\"\\([^\"]+\\)\"")
+          (setq test-name (match-string 1)))
+        (when (looking-at ".*\\b\\(?:it\\|test\\)('\\([^']+\\)'")
+          (setq test-name (match-string 1)))
+        ;; PHPUnit style: public function it_does_something
+        (when (looking-at ".*public function \\([a-z_]+\\)")
+          (setq test-name (match-string 1)))
+        (forward-line -1))
+      (if test-name
+        (my/send-to-vterm (concat "./vendor/bin/pest --filter='" test-name "' " (buffer-file-name)))
+        (message "No test found at point")))))
 
 ;; ---------------------------------------
 ;; Claude code
@@ -195,91 +252,3 @@
   :bind-keymap ("C-c c" . claude-code-command-map)
   :config
   (setq claude-code-terminal-backend 'vterm))
-
-;; ---------------------------------------
-;; Treesitter
-;; ---------------------------------------
-(setq treesit-language-source-alist
-  '((javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
-     (php . ("https://github.com/tree-sitter/tree-sitter-php" "master" "php/src"))
-     (phpdoc . ("https://github.com/claytonrcarter/tree-sitter-phpdoc" "master" "src"))))
-
-(dolist (lang '(javascript php phpdoc))
-  (unless (treesit-language-available-p lang)
-    (treesit-install-language-grammar lang)))
-
-(when (fboundp 'php-ts-mode-install-parsers)
-  (unless (treesit-language-available-p 'phpdoc)
-    (php-ts-mode-install-parsers)))
-
-;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
-;; (add-to-list 'auto-mode-alist '("\\.php\\'" . php-ts-mode))
-
-;; ---------------------------------------
-;; Testing
-;; ---------------------------------------
-(let ((testrun-dir "~/.emacs.d/private/testrun"))
-  (unless (file-directory-p testrun-dir)
-    (shell-command
-      (concat "git clone https://github.com/martini97/testrun.el " testrun-dir)))
-  (add-to-list 'load-path testrun-dir)
-  (require 'testrun)
-  (require 'testrun-jest)
-  (require 'testrun-pytest)
-  (require 'testrun-ert)
-  (require 'testrun-buttercup)
-  (put 'testrun-runners 'safe-local-variable #'listp)
-  (put 'testrun-mode-alist 'safe-local-variable #'listp))
-
-(setq testrun-runners
-  '((jest . (npx "vitest" "run" "--reporter=verbose" "--color"))
-     (pest . ("./vendor/bin/pest"))
-     (ert . ("cask" "exec" "ert-runner"))))
-
-(setq testrun-mode-alist
-  '((js-mode . jest)
-     (js-ts-mode . jest)
-     (typescript-mode . jest)
-     (typescript-ts-mode . jest)
-     (tsx-ts-mode . jest)
-     (php-mode . pest)
-     (php-ts-mode . pest)
-     (emacs-lisp-mode . ert)))
-
-(defun testrun-pest-get-test (scope)
-  "Get pest test for SCOPE."
-  (pcase scope
-    ("nearest"
-      (let* ((node (treesit-node-at (point)))
-              ;; Try Pest-style first: it() / test()
-              (pest-node (treesit-parent-until
-                           node
-                           (lambda (n)
-                             (and (string= (treesit-node-type n) "function_call_expression")
-                               (member (treesit-node-text
-                                         (treesit-node-child n 0) t)
-                                 '("it" "test"))))))
-              ;; Try PHPUnit-style: method_declaration
-              (phpunit-node (treesit-parent-until
-                              node
-                              (lambda (n)
-                                (string= (treesit-node-type n) "method_declaration")))))
-        (cond
-          (pest-node
-            (let* ((args (treesit-node-child-by-field-name pest-node "arguments"))
-                    (name (treesit-node-text (treesit-node-child args 1) t)))
-              (concat (buffer-file-name) " --filter=" name)))
-          (phpunit-node
-            (let ((name (treesit-node-text
-                          (treesit-node-child-by-field-name phpunit-node "name") t)))
-              (concat (buffer-file-name) " --filter=" name)))
-          (t (buffer-file-name)))))
-    ("namespace" (buffer-file-name))
-    ("file" (buffer-file-name))
-    ("all" nil)))
-
-(add-to-list 'testrun-runner-function-alist '(pest . testrun-pest-get-test))
-
-(treesit-language-available-p 'php)
-
-(treesit-library-abi-version)
