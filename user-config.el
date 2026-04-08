@@ -212,8 +212,8 @@
   (unless (treesit-language-available-p 'phpdoc)
     (php-ts-mode-install-parsers)))
 
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.php\\'" . php-ts-mode))
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+;; (add-to-list 'auto-mode-alist '("\\.php\\'" . php-ts-mode))
 
 ;; ---------------------------------------
 ;; Testing
@@ -281,3 +281,5 @@
 (add-to-list 'testrun-runner-function-alist '(pest . testrun-pest-get-test))
 
 (treesit-language-available-p 'php)
+
+(treesit-library-abi-version)
