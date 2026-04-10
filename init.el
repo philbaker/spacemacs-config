@@ -250,6 +250,7 @@ This function should only modify configuration layer settings."
                                         eca
                                         apheleia
                                         inheritenv
+                                        harpoon
                                         (claude-code :location (recipe
                                                                  :fetcher github
                                                                  :repo "stevemolitor/claude-code.el"

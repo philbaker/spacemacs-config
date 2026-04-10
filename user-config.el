@@ -127,25 +127,25 @@
        (file (lambda ()
                (my/meeting-note-path)))
        "#+title: %<%Y-%m-%d> %^{Meeting Title}
-#+date: %<%Y-%m-%d>
-#+time: %<%H:%M>
+         #+date: %<%Y-%m-%d>
+         #+time: %<%H:%M>
 
-* Meeting Details
-- *Date:* %<%A, %d %B %Y>
-- *Time:* %<%H:%M>
-- *Location/Call:* %^{Location|Remote|Office}
-- *Attendees:* %^{Attendees}
+         * Meeting Details
+         - *Date:* %<%A, %d %B %Y>
+         - *Time:* %<%H:%M>
+         - *Location/Call:* %^{Location|Remote|Office}
+         - *Attendees:* %^{Attendees}
 
-* Notes
-%?
+         * Notes
+         %?
 
-* Action Items
-- [ ]
+         * Action Items
+         - [ ]
 
-* Decisions Made
+         * Decisions Made
 
-* Follow Up
-"
+         * Follow Up
+         "
        :unnarrowed t)))
 
 (require 'org-habit)
@@ -252,3 +252,26 @@
   :bind-keymap ("C-c c" . claude-code-command-map)
   :config
   (setq claude-code-terminal-backend 'vterm))
+
+;; ---------------------------------------
+;; Harpoon
+;; ---------------------------------------
+(defun my/harpoon-from-branch-diff ()
+  "Populate harpoon with all changed files vs main, including uncommitted."
+  (interactive)
+  (let* ((cmd "git diff --name-only --diff-filter=d main...HEAD && git diff --name-only --diff-filter=d && git diff --name-only --diff-filter=d --cached")
+          (raw (split-string
+                 (shell-command-to-string cmd)
+                 "\n" t))
+          (files (delete-dups raw)))
+    (f-write-text
+      (mapconcat 'identity files "\n")
+      'utf-8
+      (harpoon--file-name))
+    (message "Harpoon populated with %d changed files." (length files))))
+
+(defun my/harpoon-to-org-block ()
+  "Insert current harpoon file list as org code block at point."
+  (interactive)
+  (let ((contents (f-read (harpoon--file-name) 'utf-8)))
+    (insert (concat "#+begin_src text\n" contents "\n#+end_src\n"))))
