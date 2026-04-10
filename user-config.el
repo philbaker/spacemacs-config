@@ -5,6 +5,10 @@
 ;; ---------------------------------------
 (setq bookmark-default-file "~/org-sync/bookmarks")
 
+(defmacro comment (&rest _body)
+  "Clojure-style comment block. Body is never evaluated."
+  nil)
+
 ;; ---------------------------------------
 ;; Line numbers
 ;; native line numbers taking up lots of space?
@@ -46,15 +50,26 @@
         (expand-file-name "t/stemplate.org" my/jotes-dir))
       (buffer-string))))
 
+(defvar my/last-ticket-title nil)
+(defvar my/last-ticket-file nil)
+
 (defun my/ticket-template ()
-  (concat
-    "#+title: "
-    (read-string "Enter ticket title: ")
-    "\n\n"
-    (with-temp-buffer
-      (insert-file-contents
-        (expand-file-name "all/01-checklists/t.org" my/notes-dir))
-      (buffer-string))))
+  (let* ((title (read-string "Enter ticket title: "))
+          (slug (downcase (replace-regexp-in-string "[[:space:]]+" "-" title)))
+          (file (expand-file-name
+                  (format "%s-%s.org"
+                    (format-time-string "%Y%m%d")
+                    slug)
+                  (concat my/jotes-dir "/notebooks"))))
+    (setq my/last-ticket-title title)
+    (setq my/last-ticket-file file)
+    (concat
+      "#+title: " title
+      "\n\n"
+      (with-temp-buffer
+        (insert-file-contents
+          (expand-file-name "all/01-checklists/t.org" my/notes-dir))
+        (buffer-string)))))
 
 (defun my/note-path (prompt suffix)
   (let* ((notes-dir (or (getenv "NOTES_DIR")
@@ -73,6 +88,30 @@
 
 (defun my/meeting-note-path ()
   (my/note-path "Meeting note name: " "-meeting.org"))
+
+(defun my/mirror-headline-to-tasks ()
+  (when (and org-capture-last-stored-marker
+          (equal (plist-get org-capture-plist :key) "t")
+          my/last-ticket-title)
+    (with-current-buffer (find-file-noselect "~/org-sync/work.org")
+      (goto-char (point-min))
+      (insert (concat "*** TODO " my/last-ticket-title
+                "\n"
+                ":PROPERTIES:\n"
+                ":PROJECT_FILE: [[file:" my/last-ticket-file "][Project Note]]\n"
+                ":END:\n\n"))
+      (save-buffer))
+    (setq my/last-ticket-title nil)
+    (setq my/last-ticket-file nil)))
+
+(add-hook 'org-capture-after-finalize-hook
+  #'my/mirror-headline-to-tasks)
+
+(defun my/jump-to-project-file ()
+  (interactive)
+  (let ((project-link (org-entry-get (point) "PROJECT_FILE")))
+    (when project-link
+      (org-link-open-from-string project-link))))
 
 (setq org-todo-keywords
   '((sequence "REPEAT(r)" "TODO(t)" "NEXT(n)" "ACTIVE(a!)" "C REVIEW(o)" "S REVIEW(e)" "CS REVIEW(v)" "R QUEUE(q)" "HOLD(l@/!)" "WAITING(w@/!)" "MAYBE(m)" "PROJ(p)" "|" "DONE(d!)" "CANCELLED(c@/!)")
@@ -116,10 +155,7 @@
        :unnarrowed t)
 
      ("t" "Ticket" plain
-       (file (lambda ()
-               (expand-file-name
-                 (format-time-string "%Y%m%d-ticket.org")
-                 my/jotes-dir)))
+       (file (lambda () my/last-ticket-file))
        (function my/ticket-template)
        :unnarrowed t)
 
@@ -275,3 +311,10 @@
   (interactive)
   (let ((contents (f-read (harpoon--file-name) 'utf-8)))
     (insert (concat "#+begin_src text\n" contents "\n#+end_src\n"))))
+
+(comment
+  (defvar repl/notes-dir (getenv "NOTES_DIR"))
+  (defvar repl/clo-dir   (getenv "CLO_DIR"))
+  (defvar repl/target-dir (expand-file-name "notebooks" (expand-file-name repl/clo-dir repl/notes-dir)))
+  (expand-file-name (concat (format-time-string "%Y%m%d") "-") repl/target-dir)
+  nil)
