@@ -807,8 +807,8 @@ before packages are loaded."
   (load version-control-config-file)
 
   ;; Org-mode customisation - notes and tasks
-  ;; (setq org-config-file (file-truename (concat dotspacemacs-directory "org-config.el")))
-  ;; (load org-config-file)
+  (setq org-config-file (file-truename (concat dotspacemacs-directory "org-config.el")))
+  (load org-config-file)
 
   ;; EShell Customisation
   ;; NOTE: Practicalli uses vterm for shell by default
