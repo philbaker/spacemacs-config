@@ -809,18 +809,4 @@ before packages are loaded."
   ;; Org-mode customisation - notes and tasks
   (setq org-config-file (file-truename (concat dotspacemacs-directory "org-config.el")))
   (load org-config-file)
-
-  ;; EShell Customisation
-  ;; NOTE: Practicalli uses vterm for shell by default
-  ;; (setq eshell-config-file (file-truename (concat dotspacemacs-directory "eshell-config.el")))
-  ;; (load eshell-config-file)
-
   )
-
-
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
-
-;; NOTE: `custom-set-variables` are now written to a separate file in the Spacemacs configuration location:
-;; Uncomment and evaluate, `, e e', the expression below to check your location
-;; (concat dotspacemacs-directory "emacs-custom-settings.el")
