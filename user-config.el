@@ -212,6 +212,18 @@
   (apheleia-global-mode -1))
 
 ;; ---------------------------------------
+;; Clerk notebooks
+;; ---------------------------------------
+(defun clerk-show ()
+  (interactive)
+  (when-let
+    ((filename
+       (buffer-file-name)))
+    (save-buffer)
+    (cider-interactive-eval
+      (concat "(nextjournal.clerk/show! \"" filename "\")"))))
+
+;; ---------------------------------------
 ;; Send to Vterm
 ;; ---------------------------------------
 (defun my/send-to-vterm (cmd)
